@@ -2,7 +2,7 @@
 
 // Local include(s).
 #include "Info.h"
-#include "Macros.h"
+#include "Macros.cuh"
 
 // System include(s).
 #include <cmath>

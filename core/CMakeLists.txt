@@ -6,7 +6,8 @@ if( TARGET Threads::Threads )
 endif()
 
 # The headers and sources of this library.
-set( _headers Info.h Macros.h Memory.h Memory.icc StatusCode.h StreamPool.h )
+set( _headers Info.h Macros.cuh Memory.cuh Memory.icc StatusCode.h
+   StreamPool.cuh )
 set( _sources Info.cu Memory.cu StatusCode.cxx StreamPool.cu )
 
 # Set up the library.

@@ -1,9 +1,9 @@
 // Dear emacs, this is -*- c++ -*-
-#ifndef CORE_STREAMPOOL_H
-#define CORE_STREAMPOOL_H
+#ifndef CORE_STREAMPOOL_CUH
+#define CORE_STREAMPOOL_CUH
 
 // Local include(s).
-#include "Macros.h"
+#include "Macros.cuh"
 
 // System include(s).
 #include <atomic>
@@ -105,4 +105,4 @@ private:
 
 }; // class StreamPool
 
-#endif // CORE_STREAMPOOL_H
+#endif // CORE_STREAMPOOL_CUH

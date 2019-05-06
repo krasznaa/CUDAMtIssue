@@ -1,6 +1,6 @@
 // Dear emacs, this is -*- c++ -*-
-#ifndef CORE_MACROS_H
-#define CORE_MACROS_H
+#ifndef CORE_MACROS_CUH
+#define CORE_MACROS_CUH
 
 // Local include(s).
 #include "StatusCode.h"
@@ -56,4 +56,4 @@
       }                                                              \
    } while( false )
 
-#endif // CORE_MACROS_H
+#endif // CORE_MACROS_CUH

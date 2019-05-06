@@ -1,9 +1,9 @@
 // Dear emacs, this is -*- c++ -*-
 
 // Local include(s).
-#include "Memory.h"
+#include "Memory.cuh"
 #include "Info.h"
-#include "Macros.h"
+#include "Macros.cuh"
 
 // TBB include(s).
 #include <tbb/concurrent_queue.h>

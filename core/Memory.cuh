@@ -1,9 +1,9 @@
 // Dear emacs, this is -*- c++ -*-
-#ifndef CORE_MEMORY_H
-#define CORE_MEMORY_H
+#ifndef CORE_MEMORY_CUH
+#define CORE_MEMORY_CUH
 
 // Local include(s).
-#include "Macros.h"
+#include "Macros.cuh"
 
 // System include(s).
 #include <memory>
@@ -137,4 +137,4 @@ namespace cuda {
 // Include the implementation.
 #include "Memory.icc"
 
-#endif // CORE_MEMORY_H
+#endif // CORE_MEMORY_CUH

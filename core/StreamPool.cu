@@ -1,8 +1,8 @@
 // Dear emacs, this is -*- c++ -*-
 
 // Local include(s).
-#include "StreamPool.h"
-#include "Macros.h"
+#include "StreamPool.cuh"
+#include "Macros.cuh"
 #include "Info.h"
 
 // TBB include(s).
