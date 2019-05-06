@@ -25,6 +25,10 @@ find_package( Threads )
 # Use the GNU Install directory layout.
 include( GNUInstallDirs )
 
+# Use CTest for testing the code.
+include( CTest )
+
 # Build all subdirectories.
 add_subdirectory( core )
 add_subdirectory( container )
+add_subdirectory( tests )
