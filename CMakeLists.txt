@@ -27,3 +27,4 @@ include( GNUInstallDirs )
 
 # Build all subdirectories.
 add_subdirectory( core )
+add_subdirectory( container )
