@@ -113,7 +113,9 @@ private:
    /// @{
 
    /// Buffer in CUDA device memory holding the allocated variables
-   cuda::device_array< void* >* m_buffer;
+   cuda::device_array< void* >* m_deviceBuffer;
+   /// Buffer on the host holding the allocated variables (mainly for testing)
+   cuda::array< void* > m_hostBuffer;
 
    /// Mutex used to synchronise the modifications to the cache vector
    typedef std::mutex mutex_t;

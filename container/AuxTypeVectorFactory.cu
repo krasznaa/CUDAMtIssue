@@ -9,7 +9,7 @@ __host__
 IAuxTypeVector* AuxTypeVectorFactory< T >::create( std::size_t size,
                                                    std::size_t capacity ) {
 
-   return new AuxTypeVector< T, AuxTypeVectorMemory< T >* >( size, capacity );
+   return new AuxTypeVector< T, AuxTypeVectorMemory< T > >( size, capacity );
 }
 
 /// Macro helping to instantiate the class for all POD types.

@@ -1,3 +1,4 @@
+// Dear emacs, this is -*- c++ -*-
 
 // Local include(s).
 #include "core/Memory.cuh"

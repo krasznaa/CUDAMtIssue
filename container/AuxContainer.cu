@@ -11,14 +11,14 @@
 
 __host__
 AuxContainer::AuxContainer()
-: m_size( 0 ), m_vecs(), m_buffer( nullptr ) {
+: m_size( 0 ), m_vecs(), m_deviceBuffer( nullptr ) {
 
 }
 
 __host__ __device__
 AuxContainer::AuxContainer( std::size_t size, std::size_t nVars,
                             void** vars )
-   : m_size( size ), m_vecs( nVars ), m_buffer( nullptr ) {
+   : m_size( size ), m_vecs( nVars ), m_deviceBuffer( nullptr ) {
 
    // Set up the internal variable with simple objects wrapping around the
    // received memory pointers.
@@ -41,8 +41,8 @@ AuxContainer::~AuxContainer() {
       }
    }
 #ifndef __CUDA_ARCH__
-   if( m_buffer ) {
-      delete m_buffer;
+   if( m_deviceBuffer ) {
+      delete m_deviceBuffer;
    }
 #endif // not __CUDA_ARCH__
 }
@@ -70,9 +70,6 @@ __host__
 std::pair< std::size_t, void** >
 AuxContainer::variables( cudaStream_t stream ) {
 
-   // Make sure that the function received a valid stream.
-   assert( stream != nullptr );
-
    // Protect the function from parallel execution.
    lock_t guard( m_mutex );
 
@@ -82,28 +79,36 @@ AuxContainer::variables( cudaStream_t stream ) {
       return std::pair< std::size_t, void** >( 0, nullptr );
    }
 
-   // Prepare a helper vector with the contents that will be copied into the
-   // buffer.
+   // Prepare the host array with the content that we need.
    const std::size_t s = m_vecs.size();
-   std::vector< void* > tempBuffer( s, nullptr );
+   m_hostBuffer.resize( s );
    for( std::size_t i = 0; i < s; ++i ) {
       if( m_vecs[ i ] ) {
-         tempBuffer[ i ] = m_vecs[ i ]->attachTo( stream );
+         m_hostBuffer[ i ] = m_vecs[ i ]->attachTo( stream );
+      } else {
+         m_hostBuffer[ i ] = nullptr;
       }
    }
 
-   // Create the on-device buffer.
-   if( m_buffer == nullptr ) {
-      m_buffer = new cuda::device_array< void* >();
-   }
-   *m_buffer = cuda::make_device_array< void* >( s );
-   CUDA_CHECK( cudaMemcpyAsync( m_buffer->get(), tempBuffer.data(),
-                                s * sizeof( void* ),
-                                cudaMemcpyHostToDevice,
-                                stream ) );
+   // Do different things based on whether we actually send the data to
+   // a GPU or not.
+   if( stream ) {
 
-   // Return the buffer.
-   return std::pair< std::size_t, void** >( s, m_buffer->get() );
+      // Create the on-device buffer.
+      if( m_deviceBuffer == nullptr ) {
+         m_deviceBuffer = new cuda::device_array< void* >();
+      }
+      *m_deviceBuffer = cuda::make_device_array< void* >( s );
+      CUDA_CHECK( cudaMemcpyAsync( m_deviceBuffer->get(), m_hostBuffer.get(),
+                                   s * sizeof( void* ),
+                                   cudaMemcpyHostToDevice,
+                                   stream ) );
+      // Return the buffer.
+      return std::pair< std::size_t, void** >( s, m_deviceBuffer->get() );
+   } else {
+      // Return the buffer on the host.
+      return std::pair< std::size_t, void** >( s, m_hostBuffer.get() );
+   }
 }
 
 /// This function needs to be called after a kernel has finished its

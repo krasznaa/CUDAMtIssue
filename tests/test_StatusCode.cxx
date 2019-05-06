@@ -1,3 +1,4 @@
+// Dear emacs, this is -*- c++ -*-
 
 // Project include(s).
 #include "core/StatusCode.h"
