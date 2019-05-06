@@ -19,6 +19,7 @@ endif()
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake )
 
 # External(s) needed by the project.
+find_package( Boost COMPONENTS program_options REQUIRED )
 find_package( TBB REQUIRED )
 find_package( Threads )
 

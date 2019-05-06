@@ -62,7 +62,8 @@ add_test( NAME ctest_AuxTypeVectorFactory COMMAND test_AuxTypeVectorFactory )
 
 # Build a shared library with all of the test kernel code.
 add_library( KernelTestsLib OBJECT
-   kernels/AuxPtMultiply.cuh kernels/AuxPtMultiply.cu )
+   kernels/AuxPtMultiply.cuh kernels/AuxPtMultiply.cu
+   kernels/CalibrateParticles.cuh kernels/CalibrateParticles.cu )
 target_include_directories( KernelTestsLib
    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 target_link_libraries( KernelTestsLib
@@ -77,3 +78,28 @@ add_executable( test_AuxPtMultiply test_AuxPtMultiply.cu )
 target_link_libraries( test_AuxPtMultiply
    PRIVATE CoreLib ContainerLib KernelLib KernelTestsLib )
 add_test( NAME ctest_AuxPtMultiply COMMAND test_AuxPtMultiply )
+
+# Set up the CalibrateParticles test(s).
+add_executable( test_CalibrateParticles test_CalibrateParticles.cu )
+target_link_libraries( test_CalibrateParticles
+   PRIVATE Boost::program_options CoreLib ContainerLib KernelLib
+           KernelTestsLib )
+add_test( NAME ctest_CalibrateParticles1
+   COMMAND test_CalibrateParticles -v 100 -p 100 -i 500 -t 8 -g 4 -s 5 )
+add_test( NAME ctest_CalibrateParticles2
+   COMMAND test_CalibrateParticles -v 100 -p 1000 -i 500 -t 8 -g 4 -s 5 )
+add_test( NAME ctest_CalibrateParticles3
+   COMMAND test_CalibrateParticles -v 100 -p 10000 -i 500 -t 8 -g 4 -s 5 )
+add_test( NAME ctest_CalibrateParticles4
+   COMMAND test_CalibrateParticles -v 100 -p 100000 -i 500 -t 8 -g 4 -s 5 )
+add_test( NAME ctest_CalibrateParticles5
+   COMMAND test_CalibrateParticles -v 100 -p 5000 -i 200 -t 8 -g 4 -s 5 )
+add_test( NAME ctest_CalibrateParticles6
+   COMMAND test_CalibrateParticles -v 100 -p 5000 -i 500 -t 8 -g 4 -s 5 )
+add_test( NAME ctest_CalibrateParticles7
+   COMMAND test_CalibrateParticles -v 100 -p 5000 -i 1000 -t 8 -g 4 -s 5 )
+add_test( NAME ctest_CalibrateParticles8
+   COMMAND test_CalibrateParticles -v 100 -p 5000 -i 2000 -t 8 -g 4 -s 5 )
+add_test( NAME ctest_CalibrateParticles9
+   COMMAND test_CalibrateParticles -v 100 -p 5000 -i 5000 -t 8 -g 4 -s 5 )
+
