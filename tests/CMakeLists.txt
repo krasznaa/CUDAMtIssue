@@ -84,6 +84,7 @@ add_executable( test_CalibrateParticles test_CalibrateParticles.cu )
 target_link_libraries( test_CalibrateParticles
    PRIVATE Boost::program_options CoreLib ContainerLib KernelLib
            KernelTestsLib )
+#
 add_test( NAME ctest_CalibrateParticles1
    COMMAND test_CalibrateParticles -v 100 -p 100 -i 500 -t 8 -g 4 -s 5 )
 add_test( NAME ctest_CalibrateParticles2
@@ -92,14 +93,21 @@ add_test( NAME ctest_CalibrateParticles3
    COMMAND test_CalibrateParticles -v 100 -p 10000 -i 500 -t 8 -g 4 -s 5 )
 add_test( NAME ctest_CalibrateParticles4
    COMMAND test_CalibrateParticles -v 100 -p 100000 -i 500 -t 8 -g 4 -s 5 )
+#
 add_test( NAME ctest_CalibrateParticles5
-   COMMAND test_CalibrateParticles -v 100 -p 5000 -i 200 -t 8 -g 4 -s 5 )
+   COMMAND test_CalibrateParticles -v 100 -p 10000 -i 200 -t 8 -g 4 -s 5 )
 add_test( NAME ctest_CalibrateParticles6
-   COMMAND test_CalibrateParticles -v 100 -p 5000 -i 500 -t 8 -g 4 -s 5 )
+   COMMAND test_CalibrateParticles -v 100 -p 10000 -i 500 -t 8 -g 4 -s 5 )
 add_test( NAME ctest_CalibrateParticles7
-   COMMAND test_CalibrateParticles -v 100 -p 5000 -i 1000 -t 8 -g 4 -s 5 )
+   COMMAND test_CalibrateParticles -v 100 -p 10000 -i 1000 -t 8 -g 4 -s 5 )
 add_test( NAME ctest_CalibrateParticles8
-   COMMAND test_CalibrateParticles -v 100 -p 5000 -i 2000 -t 8 -g 4 -s 5 )
+   COMMAND test_CalibrateParticles -v 100 -p 10000 -i 2000 -t 8 -g 4 -s 5 )
+#
 add_test( NAME ctest_CalibrateParticles9
-   COMMAND test_CalibrateParticles -v 100 -p 5000 -i 5000 -t 8 -g 4 -s 5 )
-
+   COMMAND test_CalibrateParticles -v 100 -p 10000 -i 1000 -t 8 -g 1 -s 5 )
+add_test( NAME ctest_CalibrateParticles10
+   COMMAND test_CalibrateParticles -v 100 -p 10000 -i 1000 -t 8 -g 2 -s 5 )
+add_test( NAME ctest_CalibrateParticles11
+   COMMAND test_CalibrateParticles -v 100 -p 10000 -i 1000 -t 8 -g 3 -s 5 )
+add_test( NAME ctest_CalibrateParticles12
+   COMMAND test_CalibrateParticles -v 100 -p 10000 -i 1000 -t 8 -g 4 -s 5 )
