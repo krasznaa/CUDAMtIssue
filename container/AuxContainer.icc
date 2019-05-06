@@ -1,0 +1,31 @@
+// Dear emacs, this is -*- c++ -*-
+#ifndef CONTAINER_AUXCONTAINER_ICC
+#define CONTAINER_AUXCONTAINER_ICC
+
+template< typename T >
+__host__ __device__
+T* AuxContainer::array( std::size_t auxid ) {
+
+   // Check whether the requested variable exists.
+   if( ( auxid >= m_vecs.size() ) || ( m_vecs[ auxid ] == nullptr ) ) {
+      return nullptr;
+   }
+   // If it does, let's assume that it is the right type. Later on some
+   // further checks could be added here.
+   return static_cast< T* >( m_vecs[ auxid ]->toPtr() );
+}
+
+template< typename T >
+__host__ __device__
+const T* AuxContainer::array( std::size_t auxid ) const {
+
+   // Check whether the requested variable exists.
+   if( ( auxid >= m_vecs.size() ) || ( m_vecs[ auxid ] == nullptr ) ) {
+      return nullptr;
+   }
+   // If it does, let's assume that it is the right type. Later on some
+   // further checks could be added here.
+   return static_cast< const T* >( m_vecs[ auxid ]->toPtr() );
+}
+
+#endif // CONTAINER_AUXCONTAINER_ICC
