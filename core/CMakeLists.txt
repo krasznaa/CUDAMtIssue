@@ -12,7 +12,16 @@ set( _sources Info.cu Memory.cu StatusCode.cxx StreamPool.cu )
 
 # Set up the library.
 add_library( CoreLib SHARED ${_headers} ${_sources} )
-target_include_directories( CoreLib PRIVATE ${TBB_INCLUDE_DIRS} )
+target_include_directories( CoreLib
+   PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/core>
+   PRIVATE ${TBB_INCLUDE_DIRS} )
 target_link_libraries( CoreLib PRIVATE ${TBB_LIBRARIES} ${_threadLib} )
 set_target_properties( CoreLib PROPERTIES
    PUBLIC_HEADER "${_headers}" )
+
+# Install the library.
+install( TARGETS CoreLib
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/core )

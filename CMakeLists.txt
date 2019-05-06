@@ -22,5 +22,8 @@ list( APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake )
 find_package( TBB REQUIRED )
 find_package( Threads )
 
+# Use the GNU Install directory layout.
+include( GNUInstallDirs )
+
 # Build all subdirectories.
 add_subdirectory( core )
