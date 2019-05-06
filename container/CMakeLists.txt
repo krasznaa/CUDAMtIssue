@@ -1,7 +1,8 @@
 
 # The headers and sources of this library.
-set( _headers IAuxTypeVector.cuh IAuxTypeVectorFactory.cuh AuxTypeVector.cuh )
-set( _sources AuxTypeVector.cu )
+set( _headers IAuxTypeVector.cuh IAuxTypeVectorFactory.cuh AuxTypeVector.cuh
+   AuxTypeVectorFactory.cuh )
+set( _sources AuxTypeVector.cu AuxTypeVectorFactory.cu )
 
 # Set up the library.
 add_library( ContainerLib OBJECT ${_headers} ${_sources} )
