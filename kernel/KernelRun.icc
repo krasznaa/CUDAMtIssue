@@ -1,0 +1,205 @@
+// Dear emacs, this is -*- c++ -*-
+#ifndef KERNEL_KERNELRUN_ICC
+#define KERNEL_KERNELRUN_ICC
+
+// Local include(s).
+#include "KernelRunnerSvc.cuh"
+
+// Project include(s).
+#include "core/Info.h"
+#include "container/AuxTypeRegistry.h"
+
+// System include(s).
+#include <memory>
+#include <tuple>
+
+namespace {
+
+   /// Function used to translate string variable names into auxiliary IDs
+   std::size_t getAuxID( const std::string& name ) {
+      static AuxTypeRegistry& r = AuxTypeRegistry::instance();
+      return r.getAuxID( name );
+   }
+
+   /// Function executing the user functor on the host
+   ///
+   /// @param aux  The auxiliary container to process
+   /// @param args Mixture of user arguments and auxiliary IDs
+   ///
+   template< class FUNCTOR, class... ARGS >
+   void hostExecute( AuxContainer& aux, ARGS... args ) {
+
+      // Instantiate the functor
+      auto functor = FUNCTOR();
+
+      // Process each element of the auxiliary container using it.
+      const std::size_t n = aux.arraySize();
+      for( std::size_t i = 0; i < n; ++i ) {
+         functor( i, aux, args... );
+      }
+      return;
+   }
+
+   /// Kernel executing the user functor on a device/GPU
+   ///
+   /// @param csize The size of the auxiliary container
+   /// @param vsize The number of variables managed by the auxiliary
+   ///              container
+   /// @param vars  Pointers to all the variables allocated on the host
+   /// @param args  Mixture of user arguments and auxiliary IDs
+   ///
+   template< class FUNCTOR, typename... ARGS >
+   __global__
+   void deviceKernel( std::size_t csize, std::size_t vsize, void** vars,
+                      ARGS... args ) {
+
+      // Find the current index that we need to process.
+      const std::size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+      if( i >= csize ) {
+         return;
+      }
+
+      // Construct the auxiliary container.
+      AuxContainer aux( csize, vsize, vars );
+
+      // Execute the user's function for this index.
+      FUNCTOR()( i, aux, args... );
+      return;
+   }
+
+   /// Function executing the user functor on a device/GPU
+   ///
+   /// @param stream The CUDA stream to schedule the execution to/with
+   /// @param aux The auxiliary container to process
+   /// @param args Mixture of user arguments and auxiliary IDs
+   ///
+   template< class FUNCTOR, class... ARGS >
+   void deviceExecute( cudaStream_t stream, AuxContainer& aux,
+                       ARGS... args ) {
+
+      // Decide how many threads to use per execution block. Default
+      // to 256, but scale back from it if necessary. (Though no
+      // current NVidia GPU should require that.)
+      int nThreadsPerBlock = 256;
+      for( int i = 0; i < Info::instance().nDevices(); ++i ) {
+         while( nThreadsPerBlock >
+                Info::instance().maxThreadsPerBlock()[ i ] ) {
+            nThreadsPerBlock /= 2;
+         }
+      }
+
+      // Schedule the data movement and the calculation.
+      const std::size_t n = aux.arraySize();
+      const int nBlocks = ( ( n + nThreadsPerBlock - 1 ) /
+                            nThreadsPerBlock );
+      auto vars = aux.variables( stream );
+      deviceKernel< FUNCTOR ><<< nBlocks, nThreadsPerBlock, 0, stream >>>(
+         n, vars.first, vars.second, args... );
+      aux.retrieveFrom( stream );
+
+      return;
+   }
+
+   /// Task launching/executing a calculation on an auxiliary container
+   ///
+   template< class FUNCTOR, typename... ARGS >
+   class AuxKernelTask : public KernelTask {
+
+   public:
+      /// Constructor with all arguments
+      AuxKernelTask( AuxContainer& aux, ARGS... args )
+      : m_aux( aux ), m_args( args... ) {
+
+      }
+
+      /// Function launching/executing the kernel on a specific stream
+      virtual void execute( cudaStream_t stream ) override {
+
+         // Do the deed.
+         executeTask( stream, tupleTail( m_args ), std::get< 0 >( m_args ) );
+         return;
+      }
+
+   private:
+      /// @name @c std::tuple handling helper functions
+      /// @{
+
+      template< class TUPLE, std::size_t... Ns >
+      auto tupleTail_impl( std::index_sequence< Ns... >, const TUPLE& t ) {
+         return std::make_tuple( std::get< Ns + 1u >( t )... );
+      }
+
+      template< class TUPLE >
+      auto tupleTail( const TUPLE& t ) {
+         return tupleTail_impl(
+            std::make_index_sequence< std::tuple_size< TUPLE >() - 1u >(), t );
+      }
+
+      /// @}
+
+      /// Function used to recursively pull out all function arguments from
+      /// the @c std::tuple member variable.
+      template< typename... ARGS1, typename... ARGS2 >
+      void executeTask( cudaStream_t stream,
+                        const std::tuple< ARGS1... >& t, ARGS2... args ) {
+         executeTask( stream, tupleTail( t ), args..., std::get< 0 >( t ) );
+         return;
+      }
+
+      /// Function called at the end of the recursive function calls. This
+      /// is the function that actually does something.
+      template< typename... ARGS1 >
+      void executeTask( cudaStream_t stream, const std::tuple<>&,
+                        ARGS1... args ) {
+
+         // Check if we should run the task on a GPU.
+         if( stream ) {
+            deviceExecute< FUNCTOR >( stream, m_aux, args... );
+            return;
+         }
+
+         // If not, the let's run it in the current thread on the CPU.
+         hostExecute< FUNCTOR >( m_aux, args... );
+         return;
+      }
+
+      /// The auxiliary container to execute the calculation on
+      AuxContainer& m_aux;
+      /// The arguments to pass to the functor
+      std::tuple< ARGS... > m_args;
+
+   }; // class AuxKernelTask
+
+   /// Helper function for creating an instance of @c AuxKernelTask
+   template< class FUNCTOR, typename... ARGS >
+   auto make_AuxKernelTask( AuxContainer& aux, ARGS... args ) {
+      return
+         std::make_unique< AuxKernelTask< FUNCTOR, ARGS... > >( aux, args... );
+   }
+
+} // private namespace
+
+namespace Kernel {
+
+   template< class FUNCTOR, class... VARNAMES >
+   KernelStatus run( AuxContainer& aux, VARNAMES... varNames ) {
+
+      // Execute the user functor on the CPU or the GPU.
+      static KernelRunnerSvc& svc = KernelRunnerSvc::instance();
+      return svc.execute( ::make_AuxKernelTask< FUNCTOR >( aux,
+                             ::getAuxID( varNames )... ) );
+   }
+
+   template< class FUNCTOR, class USERVAR, class... VARNAMES >
+   KernelStatus runWithArg( AuxContainer& aux, USERVAR userVariable,
+                            VARNAMES... varNames ) {
+
+      // Execute the user functor on the CPU or the GPU.
+      static KernelRunnerSvc& svc = KernelRunnerSvc::instance();
+      return svc.execute( ::make_AuxKernelTask< FUNCTOR >( aux,
+                             ::getAuxID( varNames )..., userVariable ) );
+   }
+
+} // namespace Kernel
+
+#endif // KERNEL_KERNELRUN_ICC

@@ -55,3 +55,25 @@ target_link_libraries( test_AuxTypeVectorFactory PRIVATE ContainerLib )
 set_target_properties( test_AuxTypeVectorFactory PROPERTIES
    CUDA_SEPARABLE_COMPILATION TRUE )
 add_test( NAME ctest_AuxTypeVectorFactory COMMAND test_AuxTypeVectorFactory )
+
+#
+# Test(s) using the kernel library:
+#
+
+# Build a shared library with all of the test kernel code.
+add_library( KernelTestsLib OBJECT
+   kernels/AuxPtMultiply.cuh kernels/AuxPtMultiply.cu )
+target_include_directories( KernelTestsLib
+   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
+target_link_libraries( KernelTestsLib
+   PUBLIC CoreLib ContainerLib
+   PRIVATE KernelLib )
+set_target_properties( KernelTestsLib PROPERTIES
+   CUDA_SEPARABLE_COMPILATION TRUE
+   POSITION_INDEPENDENT_CODE  TRUE )
+
+# Set up the AuxPtMultiply test.
+add_executable( test_AuxPtMultiply test_AuxPtMultiply.cu )
+target_link_libraries( test_AuxPtMultiply
+   PRIVATE CoreLib ContainerLib KernelLib KernelTestsLib )
+add_test( NAME ctest_AuxPtMultiply COMMAND test_AuxPtMultiply )

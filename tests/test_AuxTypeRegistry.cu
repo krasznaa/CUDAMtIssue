@@ -27,6 +27,8 @@ int main() {
    assert( vec2.get() != nullptr );
    assert( vec2->size() == 15 );
 
+   assert( auxid1 != auxid2 );
+
    // Return gracefully.
    return 0;
 }

@@ -31,4 +31,5 @@ include( CTest )
 # Build all subdirectories.
 add_subdirectory( core )
 add_subdirectory( container )
+add_subdirectory( kernel )
 add_subdirectory( tests )
